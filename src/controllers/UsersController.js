@@ -30,6 +30,30 @@ class UsersController {
     return response.status(201).json("Usuário criado com sucesso");
   }
 
+  async get(request, response) {
+  
+
+    const queryCheckUserExists = await knex("users").where({ email }).first();
+
+    if (queryCheckUserExists) {
+      const { message, statusCode } = new AppError(
+        "Este e-mail já está em uso.",
+        400
+      );
+      return response.status(statusCode).json({ message, statusCode });
+    }
+
+    const hashedPassword = await hash(password, 8);
+
+    await knex("users").insert({
+      name,
+      email,
+      password: hashedPassword,
+      is_admin: isAdmin
+    });
+
+    return response.status(201).json("Usuário criado com sucesso");
+  }
   async update(request, response) {
     const { name, email, password, oldPassword } = request.body;
     const user_id = request.user.id;
